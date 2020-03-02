@@ -49,11 +49,7 @@ a1_sheet.dtypes # use .dtypes attribute to check if columns data types are corre
 
 ```python
 
-a1_sheet[['Urzędowa cena zbytu', 'Cena hurtowa brutto', 'Cena detaliczna', 'Wysokość limitu finansowania', 'Poziom odpłatności']] = a1_sheet[['Urzędowa cena zbytu', 'Cena hurtowa brutto', 'Cena detaliczna', 'Wysokość limitu finansowania', 'Poziom odpłatności']].astype('float64')
 
-a1_sheet[['Termin wejścia w życie decyzji']] = a1_sheet[['Termin wejścia w życie decyzji']].astype('datetime64')
-
-a1_sheet[['Substancja czynna', 'Kod EAN lub inny kod odpowiadający kodowi EAN']] = a1_sheet[['Substancja czynna', 'Kod EAN lub inny kod odpowiadający kodowi EAN']].astype('category')
 
 ````
 

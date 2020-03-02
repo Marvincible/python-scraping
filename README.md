@@ -6,33 +6,55 @@ On the unit level the proccess looks like that:
 
 `Python`
 
-1. Scraping href attribute of the .xlsx file from a [subpage](https://www.gov.pl/web/zdrowie/obwieszczenie-ministra-zdrowia-z-dnia-18-lutego-2020-r-w-sprawie-wykazu-refundowanych-lekow-srodkow-spozywczych-specjalnego-przeznaczenia-zywieniowego-oraz-wyrobow-medycznych-na-1-marca-2020-r) of the Ministry of Health web service and load it into local file:
+1. Scraping href attributes of the HTML <a> elemnt within 'file-download' class which store .xlsx files from a [subpage](https://www.gov.pl/web/zdrowie/obwieszczenie-ministra-zdrowia-z-dnia-18-lutego-2020-r-w-sprawie-wykazu-refundowanych-lekow-srodkow-spozywczych-specjalnego-przeznaczenia-zywieniowego-oraz-wyrobow-medycznych-na-1-marca-2020-r) of the Ministry of Health web service and load a selectef filee into pandas dataframe specyfying sheet name and columns to load (as well as other required parameters):
 
 
 ````python
 import requests as REQ
 from bs4 import BeautifulSoup as BS
+import pandas
 import urllib.request
 URL = ‘https://www.gov.pl/web/zdrowie/obwieszczenie-ministra-zdrowia-z-dnia-18-lutego-2020-r-w-sprawie-wykazu-refundowanych-lekow-srodkow-spozywczych-specjalnego-przeznaczenia-zywieniowego-oraz-wyrobow-medycznych-na-1-marca-2020-r’
 page = REQ.get(URL)
 soup = BS(page.content, 'html.parser')
 files = soup.find_all("a", class_='file-download') # hrefs for file to be downloaded are located within <a> elemnt of file-download class 
 hrefs = [] # an empty list 
+prefix = ‘https://www.gov.pl’
 for link in files:
 	href = link.get('href')
-	hrefs.append(href)
-prefix = ‘https://www.gov.pl’
+	hrefs.append(prefix + href)
 
-target_file_path = prefix + hrefs[5] # the 5th element of hrefs’ list is a link holding a target file.
-xlsx = urllib.request.urlopen(target_file_path).read()
-xlsx_file = open('datasets.xlsx', 'wb') #create an empty file in you current working directy (check where it is with os.getcwd())
-xlsx_file.write(xlsx)
-xlsx_file.colse()
+
+target_URL = hrefs[5] # the 5th element of hrefs’ list is a link holding a target file.
+single_dataset =pandas.read_excel(target_URL, ['A1'], header = 2, index_col = 0, usecols = [0,1,2,4,5,6,8,9,10,11,14]) # loading an 'A1' sheet as a pandas.dataframe object within a dict
+a1_sheet = single_dataset['A1']
 
 ````
-2. Convert xlsx file to csv and load it into python for further data processing
+2. Convert pandas columns (**Series**) data types as required to be able to perform operations on dataframe:
 ```python
-import xlrd
-import csv
+a1_sheet.dtypes # use .dtypes attribute to check if columns data types are correct
+#Substancja czynna                                object
+#Nazwa  postać i dawka                            object
+#Kod EAN lub inny kod odpowiadający kodowi EAN     int64
+#Termin wejścia w życie decyzji                   object
+#Okres obowiązywania decyzji                      object
+#Urzędowa cena zbytu                              object
+#Cena hurtowa brutto                              object
+#Cena detaliczna                                  object
+#Wysokość limitu finansowania                     object
+#Poziom odpłatności                               object
+#dtype: object
+`````
+#To change the data types of a set of columns that store cost data into **float64** data type, use astype() method. If your decimal sign is a comma "," (which is typical for storing decimal numbers in Poland) and not a dot "." , change it:
+
+```python
+
+a1_sheet[['Urzędowa cena zbytu', 'Cena hurtowa brutto', 'Cena detaliczna', 'Wysokość limitu finansowania', 'Poziom odpłatności']] = a1_sheet[['Urzędowa cena zbytu', 'Cena hurtowa brutto', 'Cena detaliczna', 'Wysokość limitu finansowania', 'Poziom odpłatności']].astype('float64')
+
+a1_sheet[['Termin wejścia w życie decyzji']] = a1_sheet[['Termin wejścia w życie decyzji']].astype('datetime64')
+
+a1_sheet[['Substancja czynna', 'Kod EAN lub inny kod odpowiadający kodowi EAN']] = a1_sheet[['Substancja czynna', 'Kod EAN lub inny kod odpowiadający kodowi EAN']].astype('category')
+
+````
 
 

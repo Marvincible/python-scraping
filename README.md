@@ -45,8 +45,7 @@ a1_sheet.dtypes # use .dtypes attribute to check if columns data types are corre
 #Poziom odpłatności                               object
 #dtype: object
 `````
-#To change the data types of a set of columns that store cost data into **float64** data type, use astype() method. If your decimal sign is a comma "," (which is typical for storing decimal numbers in Poland) and not a dot "." , change it:
-
+#To change the data types of a set of columns that store cost data into **float64** data type, use astype() method. If your decimal sign is a comma "," (which is typical for storing decimal numbers in Poland) replace it with dot "."
 ```python
 
 
